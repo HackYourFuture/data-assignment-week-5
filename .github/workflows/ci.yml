@@ -1,0 +1,30 @@
+# Task 5: Build a CI workflow that runs on pull requests and pushes to main.
+#
+# See the assignment chapter for the required steps and commands.
+# Fill in the TODO values below.
+
+name: CI
+
+on:
+  push:
+    branches: ["TODO-replace-with-main"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Lint
+        run: echo "TODO implement this step"
+      - name: Format
+        run: echo "TODO implement this step"
+      - name: Test
+        run: echo "TODO implement this step"
+      - name: Build image
+        run: echo "TODO implement this step"
