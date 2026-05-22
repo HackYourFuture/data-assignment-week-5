@@ -3,13 +3,18 @@
 # Each level adds points toward 100; passing score is 60.
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-score=0
-details=()
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-pass() { details+=("PASS: $1"); }
-fail() { details+=("FAIL: $1"); }
-warn() { details+=("WARN: $1"); }
+# shellcheck source=.hyf/grader_lib.sh
+source "$SCRIPT_DIR/grader_lib.sh"
+
+score=0
+# grader_lib aliases for the level-based scoring pattern used in this file
+details() { printf '%s\n' "${_grader_details[@]}"; }
+pass() { _grader_details+=("PASS: $1"); }
+fail() { _grader_details+=("FAIL: $1"); }
+warn() { _grader_details+=("WARN: $1"); }
 
 # ── Level 1 (15 pts): required files exist ──────────────────────────────────
 l1=0
@@ -35,24 +40,6 @@ fi
 ((score += l1))
 pass "Level 1: required files ($l1/15 pts)"
 
-# ── .gitignore hygiene (0 pts, warnings only) ────────────────────────────────
-gi="$REPO_ROOT/.gitignore"
-if [[ ! -f "$gi" ]]; then
-  warn ".gitignore is missing — add one so __pycache__/ and *.pyc are not committed"
-else
-  if ! grep -q "__pycache__" "$gi"; then
-    warn ".gitignore is missing __pycache__/ — Python cache dirs should not be committed"
-  fi
-  if ! grep -q "\*.pyc" "$gi"; then
-    warn ".gitignore is missing *.pyc — compiled Python files should not be committed"
-  fi
-  if ! grep -q "\.env" "$gi"; then
-    warn ".gitignore is missing .env — secret files should not be committed"
-  fi
-  if grep -qE "^__pycache__/$" "$gi" && grep -qE "^\*\.pyc$" "$gi" && grep -qE "^\.env$" "$gi"; then
-    pass ".gitignore correctly excludes __pycache__/, *.pyc, and .env"
-  fi
-fi
 
 # ── Level 2 (15 pts): Dockerfile correctness ────────────────────────────────
 l2=0
@@ -172,22 +159,11 @@ fi
 ((score += l7))
 pass "Level 7: AI report ($l7/10 pts)"
 
+# ── Code hygiene (warnings from grader_lib) ──────────────────────────────────
+check_no_print_statements "$REPO_ROOT/src" "src/"
+check_gitignore_python "$REPO_ROOT/.gitignore"
+
 # ── Final result ─────────────────────────────────────────────────────────────
 passing_score=60
-pass_flag="false"
-[[ "$score" -ge "$passing_score" ]] && pass_flag="true"
-
-echo ""
-echo "=== Week 5 Autograder Results ==="
-for line in "${details[@]}"; do echo "  $line"; done
-echo ""
-echo "Score: $score / 100  (passing: $passing_score)"
-echo "Pass: $pass_flag"
-
-cat > "$(dirname "$0")/score.json" << JSON
-{
-  "score": $score,
-  "pass": $pass_flag,
-  "passingScore": $passing_score
-}
-JSON
+print_results "Week 5 Autograder"
+write_score "$score" "$passing_score" "$SCRIPT_DIR/score.json"
