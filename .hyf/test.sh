@@ -9,6 +9,7 @@ details=()
 
 pass() { details+=("PASS: $1"); }
 fail() { details+=("FAIL: $1"); }
+warn() { details+=("WARN: $1"); }
 
 # ── Level 1 (15 pts): required files exist ──────────────────────────────────
 l1=0
@@ -33,6 +34,25 @@ else
 fi
 ((score += l1))
 pass "Level 1: required files ($l1/15 pts)"
+
+# ── .gitignore hygiene (0 pts, warnings only) ────────────────────────────────
+gi="$REPO_ROOT/.gitignore"
+if [[ ! -f "$gi" ]]; then
+  warn ".gitignore is missing — add one so __pycache__/ and *.pyc are not committed"
+else
+  if ! grep -q "__pycache__" "$gi"; then
+    warn ".gitignore is missing __pycache__/ — Python cache dirs should not be committed"
+  fi
+  if ! grep -q "\*.pyc" "$gi"; then
+    warn ".gitignore is missing *.pyc — compiled Python files should not be committed"
+  fi
+  if ! grep -q "\.env" "$gi"; then
+    warn ".gitignore is missing .env — secret files should not be committed"
+  fi
+  if grep -qE "^__pycache__/$" "$gi" && grep -qE "^\*\.pyc$" "$gi" && grep -qE "^\.env$" "$gi"; then
+    pass ".gitignore correctly excludes __pycache__/, *.pyc, and .env"
+  fi
+fi
 
 # ── Level 2 (15 pts): Dockerfile correctness ────────────────────────────────
 l2=0
