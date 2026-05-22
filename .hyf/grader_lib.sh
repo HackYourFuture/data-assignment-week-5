@@ -121,7 +121,7 @@ check_gitignore_python() {
     warn ".gitignore missing .env — secret files should not be committed"
     ok=false
   fi
-  [[ "$ok" = true ]] && pass ".gitignore correctly excludes __pycache__/, *.pyc, and .env"
+  if [[ "$ok" = true ]]; then pass ".gitignore correctly excludes __pycache__/, *.pyc, and .env"; fi
 }
 
 check_screenshot_is_png() {
