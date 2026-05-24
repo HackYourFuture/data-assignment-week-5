@@ -73,7 +73,7 @@ pass "Level 2: Dockerfile ($l2/15 pts)"
 l3=0
 test_file="$REPO_ROOT/tests/test_pipeline.py"
 if [[ -f "$test_file" ]]; then
-  test_count=$(grep -cE "^def test_" "$test_file" || true)
+  test_count=$(grep -cE "^[[:space:]]*def test_" "$test_file" || true)
   if [[ "$test_count" -ge 2 ]]; then
     ((l3 += 7)); pass "tests/test_pipeline.py has $test_count test functions (≥2 required)"
   else
@@ -111,7 +111,7 @@ l5=0
 ci_file=$(ls "$REPO_ROOT/.github/workflows/"*.yml 2>/dev/null | head -1 || true)
 if [[ -n "$ci_file" ]]; then
   grep -q "pull_request" "$ci_file" && { ((l5 += 4)); pass "ci.yml triggers on pull_request"; } || fail "ci.yml missing pull_request trigger"
-  grep -q '"main"' "$ci_file" && { ((l5 += 4)); pass "ci.yml triggers on push to main"; } || fail "ci.yml missing push to main trigger"
+  grep -qE '\bmain\b' "$ci_file" && { ((l5 += 4)); pass "ci.yml triggers on push to main"; } || fail "ci.yml missing push to main trigger"
   grep -q "ruff check" "$ci_file" && { ((l5 += 3)); pass "ci.yml runs ruff check (lint)"; } || fail "ci.yml missing ruff check step"
   grep -q "ruff format" "$ci_file" && { ((l5 += 3)); pass "ci.yml runs ruff format (format check)"; } || fail "ci.yml missing ruff format step"
   grep -q "pytest" "$ci_file" && { ((l5 += 3)); pass "ci.yml runs pytest"; } || fail "ci.yml missing pytest step"
@@ -149,7 +149,7 @@ if [[ -f "$screenshot" ]]; then
     fail "assets/acr_push_week5.png exists but looks empty (${size} bytes)"
   fi
 else
-  fail "assets/acr_push_week5.png missing (Task 7 deliverable)"
+  fail "assets/acr_push_week5.png missing (Task 6 deliverable)"
 fi
 ((score += l7))
 pass "Level 7: ACR screenshot ($l7/10 pts)"

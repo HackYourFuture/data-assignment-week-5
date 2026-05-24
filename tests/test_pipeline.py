@@ -1,8 +1,5 @@
 """Tests for the Week 5 pipeline."""
 
-import os
-from pathlib import Path
-
 import pytest
 
 from src.pipeline import fetch_data, get_config, save_results
