@@ -45,8 +45,8 @@ pass "Level 1: required files ($l1/15 pts)"
 l2=0
 df="$REPO_ROOT/Dockerfile"
 if [[ -f "$df" ]]; then
-  if grep -qiE "^FROM\s+python:3\.11" "$df"; then
-    ((l2 += 5)); pass "Dockerfile uses python:3.11 base image"
+  if grep -qE "^FROM\s+python:3\.11-slim" "$df"; then
+    ((l2 += 5)); pass "Dockerfile uses python:3.11-slim base image"
   else
     fail "Dockerfile does not use python:3.11-slim base image"
   fi
@@ -54,7 +54,7 @@ if [[ -f "$df" ]]; then
   # Dependency copy must appear before source copy (cache-friendly order)
   req_line=$(grep -n "COPY.*requirements" "$df" | head -1 | cut -d: -f1 || echo 0)
   src_line=$(grep -n "COPY.*src" "$df" | head -1 | cut -d: -f1 || echo 9999)
-  if [[ "$req_line" -gt 0 && "$req_line" -lt "$src_line" ]]; then
+  if [[ "$req_line" -gt 0 && "$src_line" -lt 9999 && "$req_line" -lt "$src_line" ]]; then
     ((l2 += 7)); pass "Dockerfile copies requirements before source (cache-friendly)"
   else
     fail "Dockerfile does not copy requirements before source code"
@@ -124,7 +124,7 @@ pass "Level 5: CI workflow ($l5/20 pts)"
 l6=0
 py="$REPO_ROOT/src/pipeline.py"
 if [[ -f "$py" ]]; then
-  if grep -qE "os\.(environ|getenv)" "$py"; then
+  if grep -qE "os\.(environ|getenv)|from os import (environ|getenv)" "$py"; then
     ((l6 += 10)); pass "pipeline.py reads config from os.environ/os.getenv"
   else
     fail "pipeline.py does not read from os.environ or os.getenv"
